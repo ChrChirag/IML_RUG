@@ -108,15 +108,15 @@ def main():
 
     # The assignment now asks to compare your results with training the same model on the full set of features.
 
-    #TO DO SO:
-    #create a second split with 13 features instead of 5
-    #then split the training set and test set
-    #then train and test the model
+    # TO DO SO:
+    # create a second split with 13 features instead of 5
+    # then split the training set and test set
+    # then train and test the model
 
     X_train_full, X_test_full, y_train_full, y_test_full = train_test_split(
         dataset.data, y, test_size=0.2, random_state=42, stratify=y
     )
-   
+
     wine_scaler = StandardScaler()
     X_train_full = wine_scaler.fit_transform(X_train_full)
     X_test_full = wine_scaler.transform(X_test_full)
@@ -124,42 +124,43 @@ def main():
 
     model_full = LogisticRegression()
     model_full.fit(X_train_full, y_train_full)
-    print(model_full.score(X_test_full, y_test_full)) 
-    #score of 0.977 which is barely any different from the 5 feature model
+    print(model_full.score(X_test_full, y_test_full))
+    # score of 0.977 which is barely any different from the 5 feature model
 
-    
-    #The honest conclusion is that both models perform about equally well, around 97 to 100%, 
-    #and that a single split can't distinguish them. 
-    #It's also a more interesting result than it first looks as five features do as well as all 13. 
-    #That's important, since it means the eight features dropped didn't improve the predictions once these five were in.
-    
-#feature tranformation and residual
-    #feature transformation using log, square, root and exponential
+    # The honest conclusion is that both models perform about equally well, around 97 to 100%,
+    # and that a single split can't distinguish them.
+    # It's also a more interesting result than it first looks as five features do as well as all 13.
+    # That's important, since it means the eight features dropped didn't improve the predictions once these five were in.
 
-    
+    # feature tranformation and residual
+    # feature transformation using log, square, root and exponential
+
     X_transformed = pd.DataFrame()
     X_transformed["flavanoids_sq"] = feature_table["flavanoids"] ** 2
-    X_transformed["proline_log"] = np.log1p(feature_table["proline"]) #using log1p to avoid working with zeros and negative values
+    X_transformed["proline_log"] = np.log1p(
+        feature_table["proline"]
+    )  # using log1p to avoid working with zeros and negative values
     X_transformed["hue_cube"] = feature_table["hue"] ** 3
     X_transformed["od280_sqrt"] = np.sqrt(feature_table["od280/od315_of_diluted_wines"])
     X_transformed["alcohol_exp"] = np.exp(feature_table["alcohol"] / 10)
 
-    X_train_transformed, X_test_transformed, y_train_transformed, y_test_transformed = train_test_split(
-            X_transformed, y, test_size=0.2, random_state=42, stratify=y)
+    X_train_transformed, X_test_transformed, y_train_transformed, y_test_transformed = (
+        train_test_split(X_transformed, y, test_size=0.2, random_state=42, stratify=y)
+    )
 
     transformed_scaler = StandardScaler()
     X_train_transformed_scaled = transformed_scaler.fit_transform(X_train_transformed)
     X_test_transformed_scaled = transformed_scaler.transform(X_test_transformed)
 
-    #fitting the new model with the transformed features
+    # fitting the new model with the transformed features
     model_transformed = LogisticRegression(random_state=42)
     model_transformed.fit(X_train_transformed_scaled, y_train_transformed)
 
-    #testing the model
+    # testing the model
     test_score = model_transformed.score(X_test_transformed_scaled, y_test_transformed)
     print(test_score)
 
-    #residuals (difference between actual and prediction)
+    # residuals (difference between actual and prediction)
     test_probabilities = model_transformed.predict_proba(X_test_transformed_scaled)
     actual_class_test_proba = test_probabilities[
         np.arange(len(y_test_transformed)), y_test_transformed
@@ -167,7 +168,7 @@ def main():
     test_residuals = 1.0 - actual_class_test_proba
     print(test_residuals)
 
-    #plotting the residuals
+    # plotting the residuals
 
     plt.figure(figsize=(10, 6))
     plt.axhline(
@@ -193,11 +194,12 @@ def main():
     plt.grid(True, alpha=0.3)
     plt.tight_layout()
     plt.savefig("residual_plot.png")
+
+
 """
 The model is very confident at the extremes but less certain in the middle 
 because the various proline values isolate distinct classes at far ends, 
 but then overlap significantly in the center.
 """
-
 if __name__ == "__main__":
     main()
